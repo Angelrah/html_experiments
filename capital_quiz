@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Capitals Quiz</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 flex justify-center items-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md transition-transform hover:scale-105">
+        <h1 class="text-2xl font-semibold text-indigo-600 text-center mb-6">Country Capitals Quiz</h1>
+        <div class="mb-4">
+            <div class="bg-gray-200 rounded-full h-2 mb-2">
+                <div id="progress" class="bg-indigo-500 rounded-full h-2" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p id="question-number" class="text-right text-gray-500">Question 1/10</p>
+        </div>
+        <div id="question-container" class="text-lg text-gray-800 text-center mb-6 min-h-[3rem]">
+            Loading...
+        </div>
+        <div id="answer-options" class="grid grid-cols-2 gap-4 mb-4">
+            <button id="option-a" class="option bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md p-3 transition duration-300 ease-in-out shadow-md"></button>
+            <button id="option-b" class="option bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md p-3 transition duration-300 ease-in-out shadow-md"></button>
+            <button id="option-c" class="option bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md p-3 transition duration-300 ease-in-out shadow-md"></button>
+            <button id="option-d" class="option bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md p-3 transition duration-300 ease-in-out shadow-md"></button>
+        </div>
+        <div id="feedback" class="feedback mt-4 p-4 rounded-md text-center font-medium hidden"></div>
+        <div class="controls flex justify-center gap-4 mt-6">
+            <button id="next-btn" class="control-btn bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md py-2 px-4 transition duration-300 ease-in-out shadow-md hidden">Next Question</button>
+            <button id="restart-btn" class="control-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 px-4 transition duration-300 ease-in-out shadow-md hidden">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let quizData = [
+            { country: "United States", capital: "Washington, D.C.", incorrect: ["New York", "Los Angeles", "Chicago"] },
+            { country: "Canada", capital: "Ottawa", incorrect: ["Toronto", "Vancouver", "Montreal"] },
+            { country: "United Kingdom", capital: "London", incorrect: ["Manchester", "Edinburgh", "Cardiff"] },
+            { country: "France", capital: "Paris", incorrect: ["Marseille", "Lyon", "Toulouse"] },
+            { country: "Germany", capital: "Berlin", incorrect: ["Munich", "Hamburg", "Frankfurt"] },
+            { country: "Japan", capital: "Tokyo", incorrect: ["Osaka", "Kyoto", "Yokohama"] },
+            { country: "China", capital: "Beijing", incorrect: ["Shanghai", "Guangzhou", "Hong Kong"] },
+            { country: "India", capital: "New Delhi", incorrect: ["Mumbai", "Kolkata", "Chennai"] },
+            { country: "Brazil", capital: "Bras\u00edlia", incorrect: ["Rio de Janeiro", "S\u00e3o Paulo", "Salvador"] },
+            { country: "Australia", capital: "Canberra", incorrect: ["Sydney", "Melbourne", "Brisbane"] },
+            { country: "Egypt", capital: "Cairo", incorrect: ["Alexandria", "Luxor", "Giza"] },
+            { country: "Nigeria", capital: "Abuja", incorrect: ["Lagos", "Kano", "Ibadan"] },
+            { country: "South Africa", capital: "Pretoria", incorrect: ["Cape Town", "Johannesburg", "Durban"] },
+            { country: "Argentina", capital: "Buenos Aires", incorrect: ["Cordoba", "Rosario", "Mendoza"] },
+            { country: "Mexico", capital: "Mexico City", incorrect: ["Guadalajara", "Monterrey", "Puebla"] },
+            { country: "Russia", capital: "Moscow", incorrect: ["Saint Petersburg", "Novosibirsk", "Yekaterinburg"] },
+            { country: "Italy", capital: "Rome", incorrect: ["Milan", "Naples", "Florence"] },
+            { country: "Spain", capital: "Madrid", incorrect: ["Barcelona", "Seville", "Valencia"] },
+            { country: "Netherlands", capital: "Amsterdam", incorrect: ["Rotterdam", "The Hague", "Utrecht"] },
+            { country: "Sweden", capital: "Stockholm", incorrect: ["Gothenburg", "Malmo", "Uppsala"] },
+            { country: "Switzerland", capital: "Bern", incorrect: ["Zurich", "Geneva", "Basel"] },
+            { country: "Norway", capital: "Oslo", incorrect: ["Bergen", "Trondheim", "Stavanger"] },
+            { country: "Denmark", capital: "Copenhagen", incorrect: ["Aarhus", "Odense", "Aalborg"] },
+            { country: "Finland", capital: "Helsinki", incorrect: ["Tampere", "Turku", "Oulu"] },
+            { country: "Poland", capital: "Warsaw", incorrect: ["Krakow", "Wroclaw", "Gdansk"] },
+            { country: "Ukraine", capital: "Kyiv", incorrect: ["Kharkiv", "Odesa", "Lviv"] },
+            { country: "Greece", capital: "Athens", incorrect: ["Thessaloniki", "Patras", "Heraklion"] },
+            { country: "Turkey", capital: "Ankara", incorrect: ["Istanbul", "Izmir", "Bursa"] },
+            { country: "Iran", capital: "Tehran", incorrect: ["Mashhad", "Isfahan", "Tabriz"] },
+            { country: "Saudi Arabia", capital: "Riyadh", incorrect: ["Jeddah", "Mecca", "Medina"] },
+            { country: "Indonesia", capital: "Jakarta", incorrect: ["Surabaya", "Medan", "Bandung"] },
+            { country: "Thailand", capital: "Bangkok", incorrect: ["Chiang Mai", "Phuket", "Ayutthaya"] },
+            { country: "Vietnam", capital: "Hanoi", incorrect: ["Ho Chi Minh City", "Da Nang", "Hue"] },
+            { country: "South Korea", capital: "Seoul", incorrect: ["Busan", "Incheon", "Daegu"] },
+            { country: "North Korea", capital: "Pyongyang", incorrect: ["Kaesong", "Hamhung", "Chongjin"] },
+            { country: "Israel", capital: "Jerusalem", incorrect: ["Tel Aviv", "Haifa", "Beersheba"] },
+            { country: "Ireland", capital: "Dublin", incorrect: ["Cork", "Galway", "Limerick"] },
+            { country: "Portugal", capital: "Lisbon", incorrect: ["Porto", "Coimbra", "Faro"] },
+            { country: "Austria", capital: "Vienna", incorrect: ["Salzburg", "Graz", "Linz"] },
+            { country: "Belgium", capital: "Brussels", incorrect: ["Antwerp", "Ghent", "Bruges"] },
+            { country: "Hungary", capital: "Budapest", incorrect: ["Debrecen", "Szeged", "Pecs"] },
+            { country: "Czech Republic", capital: "Prague", incorrect: ["Brno", "Ostrava", "Plzen"] },
+            { country: "Romania", capital: "Bucharest", incorrect: ["Cluj-Napoca", "Timisoara", "Iasi"] },
+            { country: "Bulgaria", capital: "Sofia", incorrect: ["Plovdiv", "Varna", "Burgas"] },
+            { country: "Croatia", capital: "Zagreb", incorrect: ["Split", "Rijeka", "Osijek"] },
+            { country: "Serbia", capital: "Belgrade", incorrect: ["Novi Sad", "Nis", "Kragujevac"] },
+            { country: "Slovakia", capital: "Bratislava", incorrect: ["Kosice", "Presov", "Nitra"] },
+            { country: "Slovenia", capital: "Ljubljana", incorrect: ["Maribor", "Celje", "Kranj"] },
+            { country: "Estonia", capital: "Tallinn", incorrect: ["Tartu", "Narva", "Parnu"] },
+            { country: "Latvia", capital: "Riga", incorrect: ["Daugavpils", "Liepaja", "Jelgava"] },
+            { country: "Lithuania", capital: "Vilnius", incorrect: ["Kaunas", "Klaipeda", "Siauliai"] },
+            { country: "New Zealand", capital: "Wellington", incorrect: ["Auckland", "Christchurch", "Hamilton"] },
+            { country: "Chile", capital: "Santiago", incorrect: ["Valpara\u00edso", "Concepci\u00f3n", "Antofagasta"] },
+            { country: "Colombia", capital: "Bogot\u00e1", incorrect: ["Medell\u00edn", "Cali", "Barranquilla"] },
+            { country: "Peru", capital: "Lima", incorrect: ["Cusco", "Arequipa", "Trujillo"] },
+            { country: "Venezuela", capital: "Caracas", incorrect: ["Maracaibo", "Valencia", "Barquisimeto"] },
+            { country: "Cuba", capital: "Havana", incorrect: ["Santiago de Cuba", "Camag\u00fcey", "Holgu\u00edn"] },
+            { country: "Kenya", capital: "Nairobi", incorrect: ["Mombasa", "Kisumu", "Nakuru"] },
+            { country: "Morocco", capital: "Rabat", incorrect: ["Casablanca", "Marrakech", "Fez"] },
+            { country: "Ghana", capital: "Accra", incorrect: ["Kumasi", "Tamale", "Sekondi-Takoradi"] },
+            { country: "Angola", capital: "Luanda", incorrect: ["Huambo", "Benguela", "Lobito"] },
+            { country: "Algeria", capital: "Algiers", incorrect: ["Oran", "Constantine", "Annaba"] },
+            { country: "Tanzania", capital: "Dodoma", incorrect: ["Dar es Salaam", "Mwanza", "Arusha"] },
+            { country: "Uganda", capital: "Kampala", incorrect: ["Entebbe", "Jinja", "Mbarara"] },
+            { country: "Ethiopia", capital: "Addis Ababa", incorrect: ["Gondar", "Mek'ele", "Adama"] },
+            { country: "Malaysia", capital: "Kuala Lumpur", incorrect: ["George Town", "Ipoh", "Kuching"] },
+            { country: "Singapore", capital: "Singapore", incorrect: ["--", "--", "--"] },
+            { country: "Philippines", capital: "Manila", incorrect: ["Quezon City", "Davao City", "Cebu City"] },
+            { country: "Pakistan", capital: "Islamabad", incorrect: ["Karachi", "Lahore", "Faisalabad"] },
+            { country: "Bangladesh", capital: "Dhaka", incorrect: ["Chittagong", "Khulna", "Rajshahi"] },
+            { country: "Nepal", capital: "Kathmandu", incorrect: ["Pokhara", "Lalitpur", "Biratnagar"] },
+            { country: "Afghanistan", capital: "Kabul", incorrect: ["Kandahar", "Herat", "Mazar-i-Sharif"] },
+            { country: "Myanmar", capital: "Naypyidaw", incorrect: ["Yangon", "Mandalay", "Bago"] },
+            { country: "Sri Lanka", capital: "Sri Jayawardenepura Kotte", incorrect: ["Colombo", "Kandy", "Galle"] },
+            { country: "Cambodia", capital: "Phnom Penh", incorrect: ["Siem Reap", "Battambang", "Sihanoukville"] },
+            { country: "Laos", capital: "Vientiane", incorrect: ["Luang Prabang", "Savannakhet", "Pakse"] },
+            { country: "Mongolia", capital: "Ulaanbaatar", incorrect: ["Erdenet", "Darkhan", "Choibalsan"] },
+            { country: "Kazakhstan", capital: "Astana", incorrect: ["Almaty", "Shymkent", "Karaganda"] },
+            { country: "Uzbekistan", capital: "Tashkent", incorrect: ["Samarkand", "Namangan", "Andijan"] },
+            { country: "Kyrgyzstan", capital: "Bishkek", incorrect: ["Osh", "Jalal-Abad", "Karakol"] },
+            { country: "Tajikistan", capital: "Dushanbe", incorrect: ["Khujand", "Kulob", "Bokhtar"] },
+            { country: "Turkmenistan", capital: "Ashgabat", incorrect: ["Turkmenabat", "Dashoguz", "Mary"] },
+            { country: "Azerbaijan", capital: "Baku", incorrect: ["Ganja", "Sumqayit", "Mingachevir"] },
+            { country: "Georgia", capital: "Tbilisi", incorrect: ["Kutaisi", "Batumi", "Rustavi"] },
+            { country: "Armenia", capital: "Yerevan", incorrect: ["Gyumri", "Vanadzor", "Hrazdan"] },
+            { country: "Cyprus", capital: "Nicosia", incorrect: ["Limassol", "Larnaca", "Paphos"] },
+            { country: "Lebanon", capital: "Beirut", incorrect: ["Tripoli", "Sidon", "Tyre"] },
+            { country: "Jordan", capital: "Amman", incorrect: ["Irbid", "Zarqa", "Aqaba"] },
+            { country: "Oman", capital: "Muscat", incorrect: ["Salalah", "Sohar", "Nizwa"] },
+            { country: "Kuwait", capital: "Kuwait City", incorrect: ["Al Jahra", "Hawalli", "Al Ahmadi"] },
+            { country: "Qatar", capital: "Doha", incorrect: ["Al Wakrah", "Al Khor", "Al Rayyan"] },
+            { country: "Bahrain", capital: "Manama", incorrect: ["Muharraq", "Riffa", "Hamad Town"] },
+            { country: "United Arab Emirates", capital: "Abu Dhabi", incorrect: ["Dubai", "Sharjah", "Ajman"] },
+            { country: "Yemen", capital: "Sana'a", incorrect: ["Aden", "Ta'iz", "Al Hudaydah"] },
+            { country: "Syria", capital: "Damascus", incorrect: ["Aleppo", "Homs", "Latakia"] },
+            { country: "Palestine", capital: "Jerusalem", incorrect: ["Gaza City", "Hebron", "Nablus"] },
+            { country: "Iraq", capital: "Baghdad", incorrect: ["Basra", "Mosul", "Erbil"] },
+            { country: "Libya", capital: "Tripoli", incorrect: ["Benghazi", "Misrata", "Tobruk"] },
+            { country: "Tunisia", capital: "Tunis", incorrect: ["Sfax", "Sousse", "Kairouan"] },
+            { country: "Sudan", capital: "Khartoum", incorrect: ["Omdurman", "Port Sudan", "Kassala"] },
+            { country: "Somalia", capital: "Mogadishu", incorrect: ["Hargeisa", "Bosaso", "Kismayo"] },
+            { country: "Cameroon", capital: "Yaound\u00e9", incorrect: ["Douala", "Garoua", "Maroua"] },
+            { country: "Ivory Coast", capital: "Yamoussoukro", incorrect: ["Abidjan", "Bouak\u00e9", "Daloa"] },
+            { country: "Senegal", capital: "Dakar", incorrect: ["Thi\u00e8s", "Kaolack", "Ziguinchor"] },
+            { country: "Zimbabwe", capital: "Harare", incorrect: ["Bulawayo", "Chitungwiza", "Mutare"] },
+            { country: "Zambia", capital: "Lusaka", incorrect: ["Ndola", "Kitwe", "Kabwe"] },
+            { country: "Madagascar", capital: "Antananarivo", incorrect: ["Toamasina", "Antsirabe", "Fianarantsoa"] },
+            { country: "Mozambique", capital: "Maputo", incorrect: ["Beira", "Nampula", "Chimoio"] },
+            { country: "Namibia", capital: "Windhoek", incorrect: ["Walvis Bay", "Swakopmund", "Oshakati"] },
+            { country: "Botswana", capital: "Gaborone", incorrect: ["Francistown", "Molepolole", "Serowe"] },
+            { country: "Uruguay", capital: "Montevideo", incorrect: ["Salto", "Paysand\u00fa", "Maldonado"] },
+            { country: "Ecuador", capital: "Quito", incorrect: ["Guayaquil", "Cuenca", "Santo Domingo"] },
+            { country: "Bolivia", capital: "Sucre", incorrect: ["Santa Cruz de la Sierra", "La Paz", "Cochabamba"] },
+            { country: "Paraguay", capital: "Asunci\u00f3n", incorrect: ["Ciudad del Este", "San Lorenzo", "Luque"] },
+            { country: "Haiti", capital: "Port-au-Prince", incorrect: ["Carrefour", "Delmas", "Cap-Ha\u00eftien"] },
+            { country: "Dominican Republic", capital: "Santo Domingo", incorrect: ["Santiago de los Caballeros", "San Pedro de Macor\u00eds", "La Romana"] },
+            { country: "Guatemala", capital: "Guatemala City", incorrect: ["Quetzaltenango", "Escuintla", "Mixco"] },
+            { country: "Honduras", capital: "Tegucigalpa", incorrect: ["San Pedro Sula", "Choloma", "La Ceiba"] },
+            { country: "El Salvador", capital: "San Salvador", incorrect: ["Soyapango", "Santa Ana", "Mejicanos"] },
+            { country: "Nicaragua", capital: "Managua", incorrect: ["Le\u00f3n", "Granada", "Masaya"] },
+            { country: "Costa Rica", capital: "San Jos\u00e9", incorrect: ["Lim\u00f3n", "Alajuela", "Heredia"] },
+            { country: "Panama", capital: "Panama City", incorrect: ["San Miguelito", "Tocumen", "David"] },
+            { country: "Jamaica", capital: "Kingston", incorrect: ["Montego Bay", "Spanish Town", "Portmore"] },
+            { country: "Trinidad and Tobago", capital: "Port of Spain", incorrect: ["San Fernando", "Arima", "Point Fortin"] },
+            { country: "Guyana", capital: "Georgetown", incorrect: ["Linden", "New Amsterdam", "Corriverton"] },
+            { country: "Suriname", capital: "Paramaribo", incorrect: ["Lelydorp", "Brokopondo", "Nieuw Nickerie"] },
+            { country: "Belize", capital: "Belmopan", incorrect: ["Belize City", "San Ignacio", "Orange Walk Town"] },
+            { country: "Barbados", capital: "Bridgetown", incorrect: ["Speightstown", "Oistins", "Holetown"] },
+            { country: "Fiji", capital: "Suva", incorrect: ["Nadi", "Lautoka", "Labasa"] },
+            { country: "Papua New Guinea", capital: "Port Moresby", incorrect: ["Lae", "Arawa", "Mount Hagen"] },
+            { country: "Solomon Islands", capital: "Honiara", incorrect: ["Gizo", "Auki", "Kirakira"] },
+            { country: "Vanuatu", capital: "Port Vila", incorrect: ["Luganville", "Isangel", "Sola"] },
+            { country: "Micronesia", capital: "Palikir", incorrect: ["Weno", "Kolonia", "Tofol"] },
+            { country: "Kiribati", capital: "Tarawa", incorrect: ["Kiritimati", "Betio", "Bikenibeu"] },
+            { country: "Marshall Islands", capital: "Majuro", incorrect: ["Ebeye", "Jaluit", "Wotje"] },
+            { country: "Nauru", capital: "Yaren District", incorrect: ["Denigomodu District", "Aiwo District", "Anabar District"] },
+            { country: "Palau", capital: "Ngerulmud", incorrect: ["Koror", "Airai", "Melekeok"] },
+            { country: "Samoa", capital: "Apia", incorrect: ["Vaitele", "Faleula", "Leulumoega"] },
+            { country: "Tonga", capital: "Nuku'alofa", incorrect: ["Neiafu", "Pangai", "Haveluloto"] },
+            { country: "Tuvalu", capital: "Funafuti", incorrect: ["Vaiaku", "Alapi", "Fakaifou"] },
+        ];
+
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let currentQuestion;
+        let gameStarted = false;
+        let askedQuestions = [];
+
+        const questionNumberDisplay = document.getElementById("question-number");
+        const questionContainer = document.getElementById("question-container");
+        const answerOptions = document.getElementsByClassName("option");
+        const feedback = document.getElementById("feedback");
+        const nextButton = document.getElementById("next-btn");
+        const restartButton = document.getElementById("restart-btn");
+        const progress = document.getElementById("progress");
+
+
+        function startGame() {
+            gameStarted = true;
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            askedQuestions = [];
+            quizData = shuffleArray(quizData);
+            loadQuizQuestion();
+            nextButton.classList.add("hidden");
+            restartButton.classList.add("hidden");
+            feedback.classList.add("hidden");
+            progress.style.width = "0%";
+            progress.setAttribute("aria-valuenow", 0);
+        }
+
+        function updateScore(isCorrect) {
+            if (isCorrect) {
+                correctAnswers++;
+            }
+        }
+
+        function displayQuizEnd() {
+            questionContainer.textContent = "Quiz Ended!";
+            Array.from(answerOptions).forEach(button => {
+                button.classList.add("hidden");
+                button.disabled = true;
+            });
+            const percentage = (correctAnswers / quizData.length) * 100;
+            feedback.textContent = `You scored ${correctAnswers} out of ${quizData.length}. That's ${percentage.toFixed(2)}%!`;
+            feedback.classList.remove("hidden");
+            nextButton.classList.add("hidden");
+            restartButton.classList.remove("hidden");
+            const progressBar = document.getElementById("progress");
+            progressBar.style.width = `100%`;
+            progressBar.setAttribute("aria-valuenow", 100);
+        }
+
+        function loadQuizQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                displayQuizEnd();
+                return;
+            }
+
+            currentQuestion = quizData[currentQuestionIndex];
+            questionNumberDisplay.textContent = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+            questionContainer.textContent = `What is the capital of ${currentQuestion.country}?`;
+
+            const correctAnswer = currentQuestion.capital;
+            const incorrectAnswers = [...currentQuestion.incorrect];
+            const allAnswers = [correctAnswer, ...incorrectAnswers];
+            shuffleArray(allAnswers);
+
+            Array.from(answerOptions).forEach((button, i) => {
+                if (i < allAnswers.length) {
+                    button.textContent = allAnswers[i];
+                    button.classList.remove("bg-green-500", "bg-red-500", "opacity-70", "cursor-not-allowed");
+                    button.classList.add("bg-indigo-500", "hover:bg-indigo-600", "text-white", "font-semibold", "rounded-md", "p-3", "transition", "duration-300", "ease-in-out", "shadow-md", "cursor-pointer");
+                    button.disabled = false;
+                    button.classList.remove("hidden");
+                } else {
+                    button.classList.add("hidden");
+                }
+            });
+
+            let progressValue = (currentQuestionIndex / quizData.length) * 100;
+            progress.style.width = `${progressValue}%`;
+            progress.setAttribute("aria-valuenow", progressValue);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function checkAnswer(selectedAnswer) {
+            if (!gameStarted) return;
+
+            const isCorrect = selectedAnswer === currentQuestion.capital;
+            const selectedButton = Array.from(answerOptions).find(button => button.textContent === selectedAnswer);
+
+            if (selectedButton) {
+                Array.from(answerOptions).forEach(button => {
+                    button.disabled = true;
+                    button.classList.remove("hover:bg-indigo-600", "cursor-pointer");
+                    button.classList.add("opacity-70", "cursor-not-allowed");
+                });
+
+                if (isCorrect) {
+                    selectedButton.classList.remove("bg-indigo-500");
+                    selectedButton.classList.add("bg-green-500");
+                    updateScore(true);
+                    feedback.textContent = "Correct!";
+                    feedback.classList.remove("bg-red-100", "text-red-600");
+                    feedback.classList.add("bg-green-100", "text-green-600");
+                } else {
+                    selectedButton.classList.remove("bg-indigo-500");
+                    selectedButton.classList.add("bg-red-500");
+                    const correctButton = Array.from(answerOptions).find(button => button.textContent === currentQuestion.capital);
+                    if (correctButton) {
+                        correctButton.classList.remove("bg-indigo-500");
+                        correctButton.classList.add("bg-green-500");
+                    }
+                    updateScore(false);
+                    feedback.textContent = "Incorrect!";
+                    feedback.classList.remove("bg-green-100", "text-green-600");
+                    feedback.classList.add("bg-red-100", "text-red-600");
+                }
+                feedback.classList.remove("hidden");
+                nextButton.classList.remove("hidden");
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuizQuestion();
+            nextButton.classList.add("hidden");
+            feedback.classList.add("hidden");
+        }
+
+        Array.from(answerOptions).forEach(button => {
+            button.addEventListener("click", () => {
+                const selectedAnswer = button.textContent;
+                checkAnswer(selectedAnswer);
+            });
+        });
+
+        nextButton.addEventListener("click", nextQuestion);
+        restartButton.addEventListener("click", startGame);
+
+        startGame();
+    </script>
+</body>
+</html>
